@@ -118,28 +118,3 @@ exports.getOrSign = function(opts){
     }
   })
 }
-
-exports.getOrCreate = function(output, commonName, opts, callback){
-  if(typeof opts === 'function'){
-    callback = opts;
-    opts = {}
-  }
-  exports.getOrCreateCA(output, opts, function(err, CA){
-    if(err) return callback(err);
-    var days = opts.days || DAYS;
-    var bit = opts.bit || BIT;
-    exports.getOrSign({
-      days,
-      bit,
-      output,
-      commonName,
-      CA,
-      end: function(err, result){
-        if(err) return callback(err);
-        result.caCertPath = CA.cert;
-        callback(null, result);
-      }
-    })
-  })
-}
-

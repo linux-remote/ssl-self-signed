@@ -37,3 +37,4 @@ jspm_packages
 .node_repl_history
 /test/ssl-self-signed-CA
 /test/ssl-self-signed-CN-127.0.0.1
+/demoCA/newcerts/*.pem

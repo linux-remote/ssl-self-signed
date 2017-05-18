@@ -63,27 +63,3 @@ sss.getOrCreateCA(__dirname, function(err, CA){
   })
 })
 ```
-### getOrCreate(output, commonName[, opts], callback)
-使用以上两种方法的简单方法。
-- `output` string 是要输出的文件夹。
-- `commonName` string 网站域名或IP。
-- **opts** Object:
-  - `days` number 过期的天数。_默认_ `36500`
-  - `bit` number ssl加密的强度。_默认_ `2048`
-- `callback` function 回调。
-
-### 示例:
-```js
-var sss = require('../index');
-const https = require('https');
-
-sss.getOrCreate(__dirname, '127.0.0.1', function(err, result){
-  if(err) return console.error('getOrCreateCA Error', err);
-  console.log(result);
-  /*
-  { key: <Buffer ...>,
-    cert: <Buffer ...>,
-    caCertPath: 'someresolvepath/ca.crt'}
-  */
-})
-```

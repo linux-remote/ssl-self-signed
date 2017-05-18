@@ -1,0 +1,26 @@
+{
+  "name": "ssl-self-signed",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint -c C:/Users/HASEE/home/.eslin2trc.json index.js"
+  },
+  "keywords": [
+    "ssl",
+    "self-signed",
+    "sign"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hezedu/ssl-self-signed.git"
+  },
+  "author": {
+    "name": "Du Wei"
+  },
+  "dependencies": {
+    "sas": "^3.0.4"
+  },
+  "license": "MIT",
+  "email": "hezedu@hotmail.com",
+  "description": "get or create CA and self-signed certificate"
+}

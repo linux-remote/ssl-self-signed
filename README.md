@@ -1,39 +1,65 @@
-# ssl-cert-generator
+# ssl-self-signed
 自动生成ssl自签名证书。
 ## 环境
 `linux`, `openssl`
 ## 安装
-`npm install ssl-cert-generator`
+`npm install ssl-self-signed`
 
 ## API
-### generator(config)
-**config** Object:
-- `output` string 是要输出的文件夹。 **必填**
-- `commonName` string 网站域名或IP。 **必填**
-- `ca` object 使用外部CA，如果没有将自动生成CA。
-  - `key` string CA密钥路径
-  - `cert` string CA证书路径
-- `end` function 回调。
-- `bit` number ssl加密的强度。_默认_ `2048`
+### getOrCreateCA(output[, opts], callback)
+获取或创建CA。
+- `output` string 是要输出的文件夹。
+- **opts** Object:
+  - `days` number 过期的天数。_默认_ `36500`
+  - `bit` number ssl加密的强度。_默认_ `2048`
+- `callback` function 回调。
 
-简单示例:
+此方法第一次将会在`output`目录下生成`ssl-self-signed-CA`文件夹。
+如果想重新生成CA可手动删除。
+### getOrSign(config)
+获取或授权证书。
+**config** Object
+  - `output` string 是要输出的文件夹。**必填**
+  - `commonName` string 网站域名或IP。 **必填**
+  - `CA` Object **必填**
+    - `key` string CA密钥路径
+    - `cert` string CA证书路径
+  - `days` number 过期的天数。_默认_ `36500`
+  - `bit` number ssl加密的强度。_默认_ `2048`
+  - `end` function 回调。
+
+此方法第一次将会在`output`目录下生成`ssl-self-signed-CN-${commonName}`文件夹。
+如果想重新授权请手动删除。
+### 简单示例:
 ```js
-var generator = require('ssl-cert-generator');
+var sss = require('../index');
+const https = require('https');
 
-generator({
-  output: __dirname,
-  commonName: '127.0.0.1',
-  end:function(err){
-    if(err){
-      console.error('err', err);
-    }else{
-      console.log('成功！');
+sss.getOrCreateCA(__dirname, function(err, CA){
+  if(err) return console.error('getOrCreateCA Error', err);
+  console.log('CA', CA);
+  /*
+  返回的是是文件路径，其中cert可导入到浏览器。
+  {key: 'someresolvepath/ca.key', 
+  cert: 'someresolvepath/ca.crt'}
+  */
+  sss.getOrSign({
+    output: __dirname,
+    commonName: '127.0.0.1',
+    CA,
+    end: function(err, result){
+      if(err) return console.error('getOrSign Error', err);
+      console.log('result', result);
+      /*
+      返回的是是文件buffer，可直接用
+      {key: <Buffer>, 
+      cert: <Buffer>}
+      */
+      https.createServer(result, (req, res) => {
+        res.writeHead(200);
+        res.end('hello world\n');
+      }).listen(8000);
     }
-  }
-});
+  })
+})
 ```
-然后你将会在输出目录发现：
-- `ca.key` ca的密钥。
-- `ca.crt` ca的证书，你可以导入到浏览器，这样浏览器就不报警了。
-- `server.crt` 你的网站证书。
-- `server.key` 你的网站密钥。

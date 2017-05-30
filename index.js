@@ -1,120 +1,119 @@
-var {execSync, exec} = require('child_process');
-
-//if not have openssl, the program will stop in next line;
-execSync('openssl version');
+var {exec} = require('child_process');
+var fs = require('fs');
+var path = require('path');
 
 var sas = require('sas');
-var path = require('path');
-var fs = require('fs');
 
-var DAYS = 36500;
-var BIT = 2048;
-var PREFIX = 'ssl-self-signed-';
 
-function initIfNotHave(path){
-  return function(callback){
-    fs.stat(path, function(err, stat){
-      if(err || !stat.isDirectory()){
-        return callback('$reload', _mkdir);
-      }
-      callback('$up');
-    })
-  }
+/**
+ * 生成CA.key , CA.crt
+ * output 必填
+ */
 
-  function _mkdir(callback){
-    fs.mkdir(path, callback);
-  }
+// function generateCA(opts){
+//   const dir = path.resolve(opts.output);
+//   //可选
+//   const {C, O, OU, days, bit} = _commonOptsDefine(opts);
+//   const SUBJ = `/C=${C}/ST=ST/L=L/O=${O}/OU=${OU}`;
+//   const _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout CA.key -sha256 -days ${days} -out CA.crt -subj "${SUBJ}"`;
+
+//   exec(_CACmd, {cwd: dir}, opts.end);
+// }
+/**
+ * 生成CA.key , CA.crt
+ * output 必填
+ */
+// function generateCert(opts){
+//   const {output , commonName, CA} = opts;
+//   const {C, O, OU, days, bit} = _commonOptsDefine(opts);
+// }
+
+function _commonOptsDefine(opts){
+  let {C, O , OU, days, bit} = opts;
+  C = C || 'CN';
+  O = O || 'AAA-SSLSelfSigned';
+  OU = OU || O + Date.now();
+  days = days || 365* 100;
+  bit = bit || 2048;
+  return {C, O, OU, days, bit};
 }
 
-function removeDirOnError(err, path, callback){
-  exec(`rm -rf ${path}`, function(){
-    callback(err);
-  });
-}
+function generate(opts){
 
-exports.getOrCreateCA = function(out, opts, callback){
-  if(typeof opts === 'function'){
-    callback = opts;
-    opts = {};
-  }
+  //必填
+  const {commonName} = opts; 
+  const dir = opts.output;
+
+  const {C, O, OU, days, bit} = _commonOptsDefine(opts);
+  const SUBJ = `/C=${C}/ST=ST/L=L/O=${O}/OU=${OU}`;
+  const callback = opts.end;
   
-  var dir = path.resolve(out, PREFIX + 'CA');
-  var caKey = path.resolve(dir, 'ca.key');
-  var caCrt = path.resolve(dir, 'ca.crt');
-  var days = opts.days || DAYS;
-  var bit = opts.bit || BIT;
-  var OU = PREFIX + Date.now();
+  //生成两个CA文件。
+  var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout CA.key -sha256 -days ${days} -out CA.crt -subj "${SUBJ}"`;
+  //CA over;
 
-  const createCaKey  = cb => exec(`openssl genrsa -out ${caKey} ${bit}`, cb);
+  //生成两个文件 server.csr, server.key
+  //server csr
+  var serverCsrCmd = `openssl req -new -sha256 -nodes -out server.csr -newkey rsa:${bit} -keyout server.key -subj "${SUBJ}/CN=${commonName}"`;
 
-  const createCaCrt = cb => exec(
-    `openssl req -new -x509 -days ${days} -key ${caKey} -out ${caCrt} -subj "/C=CN/ST=ST/L=L/O=O/OU=${OU}"`,
-    cb);
 
-  sas([
-    initIfNotHave(dir),
-    createCaKey,
-    createCaCrt
-  ], function(err){
-    if(err){
-      removeDirOnError(err, dir, callback);
-    }else{
-      callback(null, {
-        key: caKey,
-        cert: caCrt
-      });
-    }
-  })
-}
+  //签证
+  var serverCrtCmd = `openssl x509 -req -in server.csr -CA CA.crt -CAkey CA.key -CAcreateserial -out server.crt -days ${days} -sha256 -extfile v3.ext`;
 
-exports.getOrSign = function(opts){
-  var commonName = opts.commonName;
-  var dir = path.resolve(opts.output, PREFIX + 'CN-' + commonName);
-  var serverKey = path.resolve(dir, 'server.key');
-  var serverCsr = path.resolve(dir, 'server.csr');
-  var serverCrt = path.resolve(dir, 'server.crt');
-  var callback = opts.end;
-  var days = opts.days || DAYS;
-  var bit = opts.bit || BIT;
-  var CA = opts.CA;
-  var caKey = CA.key;
-  var caCrt = CA.cert;
-  
-  //不让demoCA产生更多的文件。
-  const clearDemoCAIndex = cb => fs.writeFile(`${__dirname}/demoCA/index.txt`,'', cb);
-  const clearDemoCASerial = cb => fs.writeFile(`${__dirname}/demoCA/serial`,'01', cb);
 
-  const createServerKey = cb => exec(`openssl genrsa -out ${serverKey} ${bit}`, cb);
 
-  const createServerCsr = cb => exec(
-    `openssl req -sha256 -new -key ${serverKey} -out ${serverCsr} -subj "/C=CN/ST=ST/L=L/O=O/OU=OU/CN=${commonName}"`, 
-    cb);
+  function generateCA(callback){
+    exec(_CACmd, {cwd: dir}, callback);
+  }
 
-  const createServerCrt = cb => {
-    var ls = exec(
-    `openssl ca -in ${serverCsr}  -days ${days} -out ${serverCrt} -cert ${caCrt} -keyfile ${caKey}`,
-    {cwd: __dirname},
-    cb);
-    ls.stdin.write('y\n');
-    ls.stdin.write('y\n');
+  function generateServerCsr(callback){
+    exec(serverCsrCmd, {cwd: dir}, callback);
+  }
+
+  //生成 extfile v3.ext
+  const SVN_prefix = _parseSAN(commonName);
+  function generateExtFile(callback){
+    //alt_names_arr = alt_names_arr.join('\n');
+    var arr = [
+      'authorityKeyIdentifier=keyid,issuer',
+      'basicConstraints=CA:FALSE',
+      'keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment',
+      'subjectAltName = @alt_names',
+      '',
+      '[alt_names]',
+      `${SVN_prefix}.1 = ${commonName}`
+    ];
+    fs.writeFile(path.join(dir, 'v3.ext'), arr.join('\n'), callback);
+  }
+
+  function sign(callback){
+    exec(serverCrtCmd, {cwd: dir}, callback);
   }
 
   sas([
-    initIfNotHave(dir),
     {
-      cert: [createServerKey, createServerCsr],
-      clearDemoCAIndex,
-      clearDemoCASerial
+      generateCA,
+      generateServerCsr,
+      generateExtFile
     },
-    createServerCrt
-  ], function(err){
-    if(err){
-      removeDirOnError(err, dir, callback);
-    }else{
-      sas({
-        $key: cb => fs.readFile(serverKey, cb),
-        $cert: cb => fs.readFile(serverCrt, cb),
-      }, callback);
-    }
-  })
+    sign
+  ], callback);
+}
+
+module.exports = generate;
+
+generate({
+  output: './test',
+  commonName: '192.168.56.101',
+  end(){
+    console.log('ok');
+  }
+});
+
+function _parseSAN(param){
+  if(/[a-z]/.test(param)){
+    return 'DNS';
+  }else{
+    return 'IP';
+  }
 }

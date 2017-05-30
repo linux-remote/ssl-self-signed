@@ -39,8 +39,8 @@ sss({
   }
 });
 ```
-###opts
-`C`: Country default `"CN"`
-`O`: Organization default `"AAA ssl-self-signed"`
-`bit`: default `2048`
-`days`: default `365 * 100`
+### opts
+- `C`: Country default `"CN"`
+- `O`: Organization default `"AAA ssl-self-signed"`
+- `bit`: default `2048`
+- `days`: default `365 * 100`

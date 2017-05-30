@@ -6,9 +6,9 @@
 `npm install ssl-self-signed`
 ### 示例:
 ```js
-var generate = require('ssl-self-signed');
+var sss = require('ssl-self-signed');
 
-generate({
+sss({
   output: './test',
   commonName: '192.168.56.101',
   end(){

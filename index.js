@@ -29,10 +29,10 @@ var sas = require('sas');
 // }
 
 function _commonOptsDefine(opts){
-  let {C, O , OU, days, bit} = opts;
+  let {C, O , days, bit} = opts;
   C = C || 'CN';
-  O = O || 'AAA-SSLSelfSigned';
-  OU = OU || O + Date.now();
+  O = O || 'AAA ssl-self-signed';
+  let OU = O + ' ' + Date.now();
   days = days || 365* 100;
   bit = bit || 2048;
   return {C, O, OU, days, bit};
@@ -41,7 +41,7 @@ function _commonOptsDefine(opts){
 function generate(opts){
 
   //必填
-  const {commonName} = opts; 
+  const {commonName} = opts;
   const dir = opts.output;
 
   const {C, O, OU, days, bit} = _commonOptsDefine(opts);

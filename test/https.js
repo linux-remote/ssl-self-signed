@@ -1,10 +1,10 @@
-// curl -k https://localhost:8000/
+
 const https = require('https');
 const fs = require('fs');
 const port = 3000;
 const options = {
-  key: fs.readFileSync('./test/server.key'),
-  cert: fs.readFileSync('./test/server.crt')
+  key: fs.readFileSync('./server.key'),
+  cert: fs.readFileSync('./server.crt')
 };
 
 https.createServer(options, (req, res) => {

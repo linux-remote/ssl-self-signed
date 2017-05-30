@@ -1,22 +1,46 @@
 # ssl-self-signed
-自动生成ssl自签名证书。
+ssl self-signed certificate generator. not miss subjectAltName problem. 
 ## 环境
 `linux`, `openssl`
-## 安装
+## INstall
 `npm install ssl-self-signed`
-### 示例:
+## Examples
 ```js
 var sss = require('ssl-self-signed');
 
 sss({
-  output: './test',
+  output: __dirname,
   commonName: '192.168.56.101',
   end(){
     console.log('ok');
   }
 });
 ```
-生成的文件：
-- `CA.key` 放好别认别人看。
-- `CA.crt` 导入浏览器。
-- `server.crt`和`server.key`服务器用。
+Generate files：
+- `CA.key` CA's private key.
+- `CA.crt` Import into browser.
+- `server.crt`和`server.key` use for server.
+
+### Use other CA:
+```js
+var sss = require('ssl-self-signed');
+
+sss({
+  output: __dirname,
+  commonName: '192.168.56.101',
+  CA: {
+    key: 'somePath/CA.key',
+    cert: 'somePath/CA.crt'
+  },
+  C: 'CN', // Must be the same as CA, otherwise will be get a error.
+  O: 'AAA', // Must be the same as CA, otherwise will be get a error.
+  end(){
+    console.log('ok');
+  }
+});
+```
+###opts
+`C`: Country default `"CN"`
+`O`: Organization default `"AAA ssl-self-signed"`
+`bit`: default `2048`
+`days`: default `365 * 100`

@@ -16,3 +16,7 @@ generate({
   }
 });
 ```
+生成的文件：
+- `CA.key` 放好别认别人看。
+- `CA.crt` 导入浏览器。
+- `server.crt`和`server.key`服务器用。

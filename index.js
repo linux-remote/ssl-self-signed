@@ -102,13 +102,13 @@ function generate(opts){
 
 module.exports = generate;
 
-generate({
-  output: './test',
-  commonName: '192.168.56.101',
-  end(){
-    console.log('ok');
-  }
-});
+// generate({
+//   output: './test',
+//   commonName: '192.168.56.101',
+//   end(){
+//     console.log('ok');
+//   }
+// });
 
 function _parseSAN(param){
   if(/[a-z]/.test(param)){

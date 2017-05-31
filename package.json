@@ -1,6 +1,6 @@
 {
   "name": "ssl-self-signed",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "lint": "eslint -c C:/Users/HASEE/home/.eslin2trc.json index.js"

@@ -1,32 +1,16 @@
-var {exec} = require('child_process');
+var {exec, execSync} = require('child_process');
 var fs = require('fs');
 var path = require('path');
 
 var sas = require('sas');
 
-
-/**
- * 生成CA.key , CA.crt
- * output 必填
- */
-
-// function generateCA(opts){
-//   const dir = path.resolve(opts.output);
-//   //可选
-//   const {C, O, OU, days, bit} = _commonOptsDefine(opts);
-//   const SUBJ = `/C=${C}/ST=ST/L=L/O=${O}/OU=${OU}`;
-//   const _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout CA.key -sha256 -days ${days} -out CA.crt -subj "${SUBJ}"`;
-
-//   exec(_CACmd, {cwd: dir}, opts.end);
+// //if not have openssl, the program will stop in next line;
+// try {
+//   execSync('openssl version');
+// }catch(e){
+//   throw new Error('ssl-self-signed need openssl');
 // }
-/**
- * 生成CA.key , CA.crt
- * output 必填
- */
-// function generateCert(opts){
-//   const {output , commonName, CA} = opts;
-//   const {C, O, OU, days, bit} = _commonOptsDefine(opts);
-// }
+
 
 function _commonOptsDefine(opts){
   let {C, O , days, bit} = opts;
@@ -41,15 +25,27 @@ function _commonOptsDefine(opts){
 function generate(opts){
 
   //必填
-  const {commonName} = opts;
+  const {commonName, CA} = opts;
   const dir = opts.output;
+  
 
   const {C, O, OU, days, bit} = _commonOptsDefine(opts);
   const SUBJ = `/C=${C}/ST=ST/L=L/O=${O}/OU=${OU}`;
   const callback = opts.end;
-  
-  //生成两个CA文件。
-  var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout CA.key -sha256 -days ${days} -out CA.crt -subj "${SUBJ}"`;
+  let CAKey = 'CA.key', CACert = 'CA.crt' , generateCA;
+
+  if(!CA){
+    //生成两个CA文件。
+    var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout ${CAKey} -sha256 -days ${days} -out ${CACert} -subj "${SUBJ}"`;
+
+    generateCA = function(callback){
+      exec(_CACmd, {cwd: dir}, callback);
+    }
+  }else if(typeof CA === 'object'){
+    CAKey = CA.key;
+    CACert = CA.cert;
+  }
+
   //CA over;
 
   //生成两个文件 server.csr, server.key
@@ -58,13 +54,7 @@ function generate(opts){
 
 
   //签证
-  var serverCrtCmd = `openssl x509 -req -in server.csr -CA CA.crt -CAkey CA.key -CAcreateserial -out server.crt -days ${days} -sha256 -extfile v3.ext`;
-
-
-
-  function generateCA(callback){
-    exec(_CACmd, {cwd: dir}, callback);
-  }
+  var serverCrtCmd = `openssl x509 -req -in server.csr -CA ${CACert} -CAkey ${CAKey} -CAcreateserial -out server.crt -days ${days} -sha256 -extfile v3.ext`;
 
   function generateServerCsr(callback){
     exec(serverCsrCmd, {cwd: dir}, callback);

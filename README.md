@@ -1,8 +1,8 @@
-# ssl-self-signed
+# ssl-self-signed 2.0.1
 ssl self-signed certificate generator. not miss subjectAltName problem. 
-## 环境
-`linux`, `openssl`
-## INstall
+## environment
+`openssl`
+## Install
 `npm install ssl-self-signed`
 ## Examples
 ```js

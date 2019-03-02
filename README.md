@@ -7,9 +7,9 @@ ssl self-signed certificate generator. not miss subjectAltName problem.
 ## Examples
 ```js
 var sss = require('ssl-self-signed');
-
+// auto generate CA
 sss({
-  output: __dirname,
+  output: __dirname, 
   commonName: '192.168.56.101',
   end(){
     console.log('ok');
@@ -22,9 +22,12 @@ Generate files：
 - `server.crt`和`server.key` use for server.
 
 ### opts
-- `CA` If not have, It will generate CA. If === **true**, It will use `CA.key` file and `CA.crt` file under the ouput. If is Object, It will use you provide'CA,  default `undefined`.
+- `CA` If not set(`undefined`): If under the ouput have `CA.key` and `CA.crt`, It will generate CA. otherwise It will use `CA.key` file and `CA.crt` file under the ouput.
+  
+  If is Object: It will use you provide'CA,
   - `key` CA's private key path.
   - `cert` CA's cert file path.
+  default `undefined`.
 - `bit`: default `2048`
 - `days`: default `365 * 100`
 - `C`: Country default `"CN"`

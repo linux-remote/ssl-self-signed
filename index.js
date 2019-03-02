@@ -1,7 +1,7 @@
-var {exec, execSync} = require('child_process');
+var {exec} = require('child_process');
 var fs = require('fs');
 var path = require('path');
-
+var mkdirp = require('mkdirp');
 var sas = require('sas');
 
 // //if not have openssl, the program will stop in next line;
@@ -33,28 +33,36 @@ function generate(opts){
   const SUBJ = `/C=${C}/ST=ST/L=L/O=${O}/OU=${OU}`;
   const callback = opts.end;
   let CAKey = 'CA.key', CACert = 'CA.crt' , generateCA;
-
-  if(!CA){
-    //生成两个CA文件。
-    var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout ${CAKey} -sha256 -days ${days} -out ${CACert} -subj "${SUBJ}"`;
-
-    generateCA = function(callback){
-      exec(_CACmd, {cwd: dir}, callback);
-    }
-  }else if(typeof CA === 'object'){
+  const isOtherCA = (typeof CA === 'object');
+  if(isOtherCA){
     CAKey = CA.key;
     CACert = CA.cert;
+  } else {
+    try {
+      fs.statSync(path.join(dir, CAKey));
+      fs.statSync(path.join(dir, CAKey));
+    } catch(e) {
+      //生成两个CA文件。
+      var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout ${CAKey} -sha256 -days ${days} -out ${CACert} -subj "${SUBJ}"`;
+
+      generateCA = function(callback){
+        exec(_CACmd, {cwd: dir}, callback);
+      }
+    }
+    
   }
 
   //CA over;
-
+  const serverFilePath = path.join(dir, commonName);
+  // 创建 以 commonName 为名字的文件夹
+  mkdirp.sync(serverFilePath);
   //生成两个文件 server.csr, server.key
   //server csr
-  var serverCsrCmd = `openssl req -new -sha256 -nodes -out server.csr -newkey rsa:${bit} -keyout server.key -subj "${SUBJ}/CN=${commonName}"`;
+  var serverCsrCmd = `openssl req -new -sha256 -nodes -out ${commonName}/server.csr -newkey rsa:${bit} -keyout ${commonName}/server.key -subj "${SUBJ}/CN=${commonName}"`;
 
 
   //签证
-  var serverCrtCmd = `openssl x509 -req -in server.csr -CA ${CACert} -CAkey ${CAKey} -CAcreateserial -out server.crt -days ${days} -sha256 -extfile v3.ext`;
+  var serverCrtCmd = `openssl x509 -req -in ${commonName}/server.csr -CA ${CACert} -CAkey ${CAKey} -CAcreateserial -out ${commonName}/server.crt -days ${days} -sha256 -extfile v3.ext`;
 
   function generateServerCsr(callback){
     exec(serverCsrCmd, {cwd: dir}, callback);
@@ -87,7 +95,16 @@ function generate(opts){
       generateExtFile
     },
     sign
-  ], callback);
+  ], function(err, result) {
+    if(err) {
+      return callback(err);
+    }
+    if(isOtherCA) {
+      fs.writeFile(path.join(serverFilePath, 'otherCA.json'), JSON.stringify(CA, null, ' '), callback);
+    } else {
+      callback(null, result);
+    }
+  });
 }
 
 module.exports = generate;
@@ -101,7 +118,7 @@ module.exports = generate;
 // });
 
 function _parseSAN(param){
-  if(/[a-z]/.test(param)){
+  if(/[a-z]/.test(param) && param.indexOf('.') !== -1){
     return 'DNS';
   }else{
     return 'IP';

@@ -1,5 +1,5 @@
 # ssl-self-signed 2.0.1
-ssl self-signed certificate generator. not miss subjectAltName problem. 
+Generate 100-year self-signed ssl certificates for your domain/IP.
 ## environment
 `openssl`
 ## Install

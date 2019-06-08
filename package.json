@@ -2,7 +2,9 @@
   "name": "ssl-self-signed",
   "version": "2.0.1",
   "main": "index.js",
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "scripts": {
     "lint": "eslint -c C:/Users/HASEE/home/.eslin2trc.json index.js"
   },

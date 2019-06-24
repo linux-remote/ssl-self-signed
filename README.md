@@ -22,12 +22,11 @@ Generate files：
 - `server.crt`和`server.key` use for server.
 
 ### opts
-- `CA` If not set(`undefined`): If under the ouput not have `CA.key` and `CA.crt`, It will generate CA. otherwise It will use `CA.key` and `CA.crt` under the ouput.
+- `CA` If not set(`undefined`): If under the ouput not have `CA.key` and `CA.crt`, It will generate CA. otherwise It will use `CA.key` and `CA.crt` under the ouput. default `undefined`.
   
   If is Object: It will use you provide'CA,
   - `key` CA's private key path.
   - `cert` CA's cert file path.
-  default `undefined`.
 - `bit`: default `2048`
 - `days`: default `365 * 100`
 - `C`: Country default `"CN"`

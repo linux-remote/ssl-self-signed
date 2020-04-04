@@ -1,4 +1,4 @@
-var {exec} = require('child_process');
+var {exec, execSync} = require('child_process');
 var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
@@ -54,6 +54,18 @@ function generate(opts){
 
   //CA over;
   const serverFilePath = path.join(dir, commonName);
+  let isHasFilePathError = true;
+  try {
+    fs.accessSync(serverFilePath, fs.constants.F_OK);
+  } catch(e){
+    isHasFilePathError = false;
+    // not have
+  }
+  if(isHasFilePathError){
+    callback(new Error(`"${serverFilePath}" already exists.`));
+    return;
+  }
+  
   // 创建 以 commonName 为名字的文件夹
   mkdirp.sync(serverFilePath);
   //生成两个文件 server.csr, server.key
@@ -99,11 +111,30 @@ function generate(opts){
     if(err) {
       return callback(err);
     }
-    if(isOtherCA) {
-      fs.writeFile(path.join(serverFilePath, 'otherCA.json'), JSON.stringify(CA, null, ' '), callback);
-    } else {
-      callback(null, result);
+    
+    function _end(err){
+      if(err){
+        return callback(err);
+      }
+      const chmodCMD = 'chmod 700 -R ' + serverFilePath;
+      setTimeout(() => {
+        // console.log(chmodCMD);
+        execSync(chmodCMD, {
+          stdio: 'inherit'
+        });
+        // console.log('' + serverFilePath)
+        callback(null, result);
+      });
+
     }
+
+
+    if(isOtherCA) {
+      fs.writeFile(path.join(serverFilePath, 'otherCA.json'), JSON.stringify(CA, null, ' '), _end);
+    } else {
+      _end(null);
+    }
+
   });
 }
 

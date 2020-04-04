@@ -12,6 +12,9 @@ sss({
   output: __dirname, 
   commonName: '192.168.56.101',
   end(){
+    if(err){
+      return console.error(err);
+    }
     console.log('ok');
   }
 });
@@ -46,7 +49,10 @@ sss({
   },
   C: 'CN', // Must be the same as CA, otherwise will be get a unhandle error.
   O: 'AAA', // Must be the same as CA, otherwise will be get a unhandle error.
-  end(){
+  end(err){
+    if(err){
+      return console.error(err);
+    }
     console.log('ok');
   }
 });

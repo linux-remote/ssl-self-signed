@@ -1,7 +1,6 @@
 var {exec, execSync} = require('child_process');
 var fs = require('fs');
 var path = require('path');
-var mkdirp = require('mkdirp');
 var sas = require('sas');
 
 // //if not have openssl, the program will stop in next line;
@@ -67,7 +66,9 @@ function generate(opts){
   }
   
   // 创建 以 commonName 为名字的文件夹
-  mkdirp.sync(serverFilePath);
+  execSync('mkdir -p ' + serverFilePath, {
+    stdio: 'inherit'
+  });
   //生成两个文件 server.csr, server.key
   //server csr
   var serverCsrCmd = `openssl req -new -sha256 -nodes -out ${commonName}/server.csr -newkey rsa:${bit} -keyout ${commonName}/server.key -subj "${SUBJ}/CN=${commonName}"`;

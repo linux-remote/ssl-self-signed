@@ -23,9 +23,8 @@ sss({
 ```
 Generate files：
 - `CA.key` CA's private key.
-- `CA.crt` Import into browser.
+- `CA.crt` Import into browser, See [window-chrome-import-guide](win-chrome-import-guide.md).
 - `server.crt`和`server.key` use for server.
-
 ### opts
 - `CA` If not set(`undefined`): If under the ouput not have `CA.key` and `CA.crt`, It will generate CA. otherwise It will use `CA.key` and `CA.crt` under the ouput. default `undefined`.
   
@@ -59,8 +58,8 @@ sss({
   }
 });
 ```
-## Demo:
+<!-- ## Demo:
 1. Download [CA-of-demo.crt](https://raw.githubusercontent.com/linux-remote/ssl-self-signed/master/CA-of-demo.crt)
 2. Import into browsers(put it into 'Trusted Root Certification Authorities' place). Some guide like: [window-chrome-import-guide](win-chrome-import-guide.md)
 3. Restart your browser.
-4. Visit https://149.129.62.26:3002
+4. Visit https://149.129.62.26:3002 -->

@@ -1,8 +1,14 @@
 ## New Chrome Version(80.0.3987.149) Window 10
-### Setting -> Privacy and security -> More -> Manage certificates
-### Select Trusted Root Certification Authorities tab.
-### Click  Import and  Next -> Next -> Next -> Yes ...
+- Setting -> Privacy and security -> More -> Manage certificates
+- Select Trusted Root Certification Authorities tab.
+- Click  Import and  Next -> Next -> Next -> Yes ...
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 -------------------------------- old --------------------------------
 
 ### Setting -> Advanced -> Manage certificates

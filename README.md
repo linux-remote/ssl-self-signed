@@ -1,6 +1,8 @@
-# ssl-self-signed 2.0.1
+# ssl-self-signed
 Generate 100-year self-signed ssl certificates for your domain/IP.
 ## Requested
+Linux
+
 [OpenSSL](https://www.openssl.org)
 ## Install
 `npm install ssl-self-signed`

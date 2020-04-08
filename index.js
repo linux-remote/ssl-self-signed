@@ -38,14 +38,25 @@ function generate(opts){
     CACert = CA.cert;
   } else {
     try {
+      // 
       fs.statSync(path.join(dir, CAKey));
-      fs.statSync(path.join(dir, CAKey));
+      fs.statSync(path.join(dir, CACert));
+      // 如果已存在：generateCA undefined.
     } catch(e) {
+      if(e.code !== 'ENOENT'){
+        callback(e);
+        return;
+      }
       //生成两个CA文件。
       var _CACmd = `openssl req -x509 -new -nodes -newkey rsa:${bit} -keyout ${CAKey} -sha256 -days ${days} -out ${CACert} -subj "${SUBJ}"`;
 
       generateCA = function(callback){
-        exec(_CACmd, {cwd: dir}, callback);
+        exec(_CACmd, {cwd: dir}, function(err){
+          if(err){
+            return callback(err);
+          }
+          exec('chmod 600 ' + CAKey, {cwd: dir}, callback);
+        });
       }
     }
     

@@ -23,7 +23,7 @@ sss({
 ```
 Generate files：
 - `CA.key` CA's private key.
-- `CA.crt` Import into browser, Some guide like [window-chrome-import-guide](win-chrome-import-guide.md).
+- `CA.crt` Import into browser.
 - `server.crt`和`server.key` use for server.
 ### opts
 - `CA` If not set(`undefined`): If under the ouput not have `CA.key` and `CA.crt`, It will generate CA. otherwise It will use `CA.key` and `CA.crt` under the ouput. default `undefined`.

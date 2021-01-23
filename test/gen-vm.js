@@ -5,6 +5,7 @@ var generate = require('../index');
 generate({
   output: path.join(__dirname, '../../server/dev_ssl'),
   commonName: '192.168.56.101',
+  O: 'linux-remote-dev-ssl',
   end(err){
     if(err) {
       return console.error('err', err);
